@@ -1,4 +1,5 @@
-
+#include <cstdlib>
+#include <stdexcept>
 #include "httplib.h"
 #include "RateLimiter.h"
 #include "SlidingWindowLimiter.h"
@@ -64,7 +65,10 @@ int main() {
     std::cout << "RateGuard server running at "
               << "http://localhost:8080/api/test\n";
 
-    server.listen("127.0.0.1", 8080);
+    const char* portEnv = std::getenv("PORT");
+    int port = portEnv ? std::stoi(portEnv) : 8080;
+
+    server.listen("0.0.0.0", port);
 
     return 0;
 }
