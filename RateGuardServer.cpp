@@ -1,40 +1,51 @@
+#include <fstream>
+#include <iterator>
 #include <cstdlib>
 #include <stdexcept>
+#include <iostream>
+#include <string>
+
 #include "httplib.h"
 #include "RateLimiter.h"
 #include "SlidingWindowLimiter.h"
 #include "TokenBucketLimiter.h"
 
-#include <iostream>
-#include <string>
-
 int main() {
     httplib::Server server;
-    server.Get("/", [](const httplib::Request& req,
-                   httplib::Response& res) {
-                     res.set_content(
-                         "RateGuard API is running!\n"
-                         "A C++ API rate limiter implementing "
-                         "Fixed Window, Sliding Window, and Token Bucket.\n"
-                         "Try /api/test?algorithm=fixed\n"
-                          "Try /api/test?algorithm=sliding\n"
-                          "Try /api/test?algorithm=token\n",
-                          "text/plain"
-                      );
-    });
 
+    // Serve the RateGuard webpage.
+    server.Get("/", [](const httplib::Request& req,
+                       httplib::Response& res) {
+        std::ifstream file("public/index.html");
+
+        if (!file.is_open()) {
+            res.status = 500;
+            res.set_content(
+                "Could not load public/index.html",
+                "text/plain"
+            );
+            return;
+        }
+
+        std::string html(
+            (std::istreambuf_iterator<char>(file)),
+            std::istreambuf_iterator<char>()
+        );
+
+        res.set_content(html, "text/html");
+    });
 
     // Create all three rate limiters.
     RateLimiter fixedLimiter(5, 60);
     SlidingWindowLimiter slidingLimiter(5, 60);
     TokenBucketLimiter tokenLimiter(5, 1);
 
+    // API endpoint for testing the algorithms.
     server.Get("/api/test", [&](const httplib::Request& req,
                                 httplib::Response& res) {
         std::string userId = "demo-user";
         std::string algorithm = "fixed";
 
-        // Read the algorithm from the URL.
         if (req.has_param("algorithm")) {
             algorithm = req.get_param_value("algorithm");
         }
@@ -75,11 +86,11 @@ int main() {
         }
     });
 
-    std::cout << "RateGuard server running at "
-              << "http://localhost:8080/api/test\n";
-
     const char* portEnv = std::getenv("PORT");
     int port = portEnv ? std::stoi(portEnv) : 8080;
+
+    std::cout << "RateGuard server running on port "
+              << port << std::endl;
 
     server.listen("0.0.0.0", port);
 

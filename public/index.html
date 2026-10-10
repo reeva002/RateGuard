@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RateGuard | API Rate Limiter</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0b1020;
+            color: #f4f6ff;
+        }
+
+        header {
+            padding: 24px 8%;
+            border-bottom: 1px solid #26304a;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        header span {
+            color: #65e6b4;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 55px auto;
+            padding: 0 22px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: clamp(34px, 6vw, 52px);
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            color: #aab4ce;
+            line-height: 1.7;
+        }
+
+        .status {
+            display: inline-block;
+            color: #65e6b4;
+            border: 1px solid #286b57;
+            background: #112b29;
+            border-radius: 20px;
+            padding: 8px 14px;
+            font-size: 13px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: #131b30;
+            border: 1px solid #293551;
+            border-radius: 14px;
+            padding: 24px;
+        }
+
+        .card h2 {
+            font-size: 20px;
+        }
+
+        .card p {
+            color: #aab4ce;
+            min-height: 60px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #65e6b4;
+            color: #08130f;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .result {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #0b1020;
+            color: #aab4ce;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+            min-height: 42px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 15px;
+            color: #aab4ce;
+            font-size: 13px;
+        }
+
+        a {
+            color: #65e6b4;
+        }
+    </style>
+</head>
+<body>
+    <header>Rate<span>Guard</span> | C++ API Rate Limiter</header>
+
+    <main>
+        <section class="hero">
+            <div class="status">● API Demo</div>
+            <h1>Control the flow.<br>Protect your API.</h1>
+            <p>
+                Explore three rate-limiting algorithms.
+                Click a button to send a real request to the RateGuard API.
+            </p>
+        </section>
+
+        <section class="cards">
+            <article class="card">
+                <h2>Fixed Window</h2>
+                <p>Limits the number of requests allowed during a fixed time period.</p>
+                <button onclick="testAlgorithm('fixed', this)">Send Request</button>
+                <div class="result" aria-live="polite">Ready to test.</div>
+            </article>
+
+            <article class="card">
+                <h2>Sliding Window</h2>
+                <p>Tracks requests over a moving time window to control traffic.</p>
+                <button onclick="testAlgorithm('sliding', this)">Send Request</button>
+                <div class="result" aria-live="polite">Ready to test.</div>
+            </article>
+
+            <article class="card">
+                <h2>Token Bucket</h2>
+                <p>Uses tokens that refill over time to control request bursts.</p>
+                <button onclick="testAlgorithm('token', this)">Send Request</button>
+                <div class="result" aria-live="polite">Ready to test.</div>
+            </article>
+        </section>
+    </main>
+
+    <footer>
+        Built with C++ and cpp-httplib |
+        <a href="https://github.com/reeva002/RateGuard" target="_blank" rel="noopener">View Source on GitHub</a>
+    </footer>
+
+    <script>
+        async function testAlgorithm(algorithm, button) {
+            const result = button.nextElementSibling;
+
+            button.disabled = true;
+            result.textContent = "Sending request...";
+
+            try {
+                const response = await fetch(
+                    "/api/test?algorithm=" + algorithm,
+                    { cache: "no-store" }
+                );
+
+                const message = await response.text();
+
+                result.textContent =
+                    "HTTP " + response.status + ": " + message;
+            } catch (error) {
+                result.textContent =
+                    "Could not connect to the API. Please try again.";
+            } finally {
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
