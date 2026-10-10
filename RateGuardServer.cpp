@@ -10,6 +10,19 @@
 
 int main() {
     httplib::Server server;
+    server.Get("/", [](const httplib::Request& req,
+                   httplib::Response& res) {
+                     res.set_content(
+                         "RateGuard API is running!\n"
+                         "A C++ API rate limiter implementing "
+                         "Fixed Window, Sliding Window, and Token Bucket.\n"
+                         "Try /api/test?algorithm=fixed\n"
+                          "Try /api/test?algorithm=sliding\n"
+                          "Try /api/test?algorithm=token\n",
+                          "text/plain"
+                      );
+    });
+
 
     // Create all three rate limiters.
     RateLimiter fixedLimiter(5, 60);
